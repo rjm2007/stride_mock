@@ -5,7 +5,7 @@ Staff add fake patients and appointments in a small web app; every 5 minutes it 
 Stride-format CSV files to our real SFTP server (`stride@<our SFTP server>:/incoming`), which the backend's
 `stride-worker` imports into the **demo** database.
 
-- Live: https://mock-stride.vercel.app (Vercel project `mock-stride`, team "nuriq"). Password = `MOCK_STRIDE_PASSWORD`.
+- Live: https://mock-stride-aijnbazm1-nuriq.vercel.app (Vercel project `stride_mock`, team "nuriq", deploys from GitHub `main`). Password = `MOCK_STRIDE_PASSWORD`.
 - Data: schema `mock_stride` in the **demo** Supabase project (`sql/schema.sql`). Reads `public.leads`,
   `public.stride_import_files`, `public.service_heartbeats`, `public.stride_patients` for its screens.
 - Timer: `/etc/cron.d/mock-stride-timer` on the EC2 server calls `GET /api/cron/export` every 5 minutes with
