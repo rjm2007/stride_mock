@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets: real values live only in Vercel project settings and in .secrets/ (never committed)
+.env
+.env.*
+!.env.example
+.secrets/
+*.pem
+*.key
+.playwright-mcp/
+.DS_Store
