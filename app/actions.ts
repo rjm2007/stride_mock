@@ -22,12 +22,18 @@ function phone10(value: string | null): string | null {
 // Real Stride refuses a second visit in the same case at the same start ("Appointment Date+Case
 // combination already exists"). Mock Stride allowed it, and then a Delete row (which has no
 // Appointment Id) matched two visits, so our server could not tell which one was deleted.
-async function refuseDoubleBooking(caseId: number, date: string, time: string, exceptId = 0) {
+// Returns the refusal text, or null. Callers redirect back with it: a thrown error would only show
+// Next.js's generic "Application error" page in production.
+async function doubleBookingRefusal(caseId: number, date: string, time: string, exceptId = 0) {
   const [clash] = await sql`select id from mock_stride.appointments where case_id=${caseId} and deleted_at is null
     and appt_date=${date} and start_time=${time}::time and id<>${exceptId}`;
-  if (clash) {
-    throw new Error(`Stride does not allow this: visit ${clash.id} is already booked in this case on ${date} at ${time}. Pick another time.`);
-  }
+  return clash
+    ? `Stride does not allow this: visit ${clash.id} is already booked for this patient on ${date} at ${time}. Pick another time.`
+    : null;
+}
+
+function backWithError(patientId: number, message: string): never {
+  redirect(`/patients/${patientId}?error=${encodeURIComponent(message)}`);
 }
 
 function refresh(...paths: string[]) {
@@ -98,7 +104,8 @@ export async function bookAppointment(form: FormData) {
   const caseId =
     found?.id ??
     (await sql`insert into mock_stride.cases(patient_id,title) values(${patientId},'Physical Therapy') returning id`)[0].id;
-  await refuseDoubleBooking(caseId, date, time);
+  const refusal = await doubleBookingRefusal(caseId, date, time);
+  if (refusal) backWithError(patientId, refusal);
   await sql`insert into mock_stride.appointments
     (patient_id,case_id,type_id,type_name,appt_date,start_time,end_time,location_id,clinician_id,status)
     values(${patientId},${caseId},${type.id},${type.name},${date},${time}::time,
@@ -121,8 +128,11 @@ export async function rescheduleAppointment(form: FormData) {
   const date = text(form, "date");
   const time = text(form, "time");
   if (!date || !time) throw new Error("Date and time are required");
-  const [current] = await sql`select case_id from mock_stride.appointments where id=${Number(form.get("id"))}`;
-  if (current) await refuseDoubleBooking(current.case_id, date, time, Number(form.get("id")));
+  const [current] = await sql`select case_id, patient_id from mock_stride.appointments where id=${Number(form.get("id"))}`;
+  if (current) {
+    const refusal = await doubleBookingRefusal(current.case_id, date, time, Number(form.get("id")));
+    if (refusal) backWithError(current.patient_id, refusal);
+  }
   const [row] = await sql`update mock_stride.appointments set appt_date=${date}, end_time=${time}::time + (end_time - start_time),
     start_time=${time}::time, modified_at=now() where id=${Number(form.get("id"))} returning patient_id`;
   await touchPatient(row?.patient_id);

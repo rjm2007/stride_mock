@@ -12,8 +12,15 @@ import { phone, statusPill, todayInClinic, when } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PatientPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { id } = await params;
+  const { error } = await searchParams;
   const patientId = Number(id);
   if (!Number.isInteger(patientId)) notFound();
   const [p] = await sql`select p.*, p.date_of_birth::text as dob, l.full_name as lead_name, l.status as lead_status,
@@ -33,6 +40,11 @@ export default async function PatientPage({ params }: { params: Promise<{ id: st
     <>
       <div>
         <a href="/patients">← Patients</a>
+        {error ? (
+          <p className="pill bad" role="alert" style={{ display: "block", whiteSpace: "normal", borderRadius: 8, padding: "10px 12px", margin: "10px 0" }}>
+            {error}
+          </p>
+        ) : null}
         <h1>
           {p.first_name} {p.last_name} {p.deleted_at ? <span className="pill bad">Deleted</span> : null}
         </h1>
