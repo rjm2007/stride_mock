@@ -1,77 +1,94 @@
 export const dynamic = "force-static";
 
-type Case = { title: string; steps: string[]; expect: string[] };
+type Case = { id: string; title: string; steps: string[]; expect: string[] };
 
+// Short version of the full test plan (Stride Sync Test Plan, same case ids). Keep both in step.
 const CASES: Case[] = [
   {
-    title: "1. A Sheet lead books on their own",
+    id: "B",
+    title: "A Sheet lead books in Stride",
     steps: [
-      "Add 5 leads to the test Google Sheet (use team phone numbers; real calls/texts go out).",
-      "Wait until they appear under “Our leads” here and calls/texts are running.",
-      "For 2 of them: “Create in Stride”, then book an Initial Evaluation tomorrow.",
-      "Wait up to 5 minutes for the file, then 1–2 minutes for our server.",
+      "Add leads to the test Google Sheet (Action = Start cadence, birthday filled). Use a US number that can receive texts: texts to +91 numbers fail and pause the lead for review.",
+      "Here: Our leads → “Create in Stride” on each, then book an Initial Evaluation on a future date.",
+      "Overview → “Send changes now” (it waits a few seconds by itself), then wait 1–2 minutes.",
     ],
     expect: [
-      "“Our server” → those 2 leads: Matched, booked, 0 planned calls/texts left.",
-      "Google Sheet shows Booked for them.",
-      "No more calls or texts to those 2 numbers.",
+      "Our server → each lead: matched, booked, 0 planned calls/texts left.",
+      "Dashboard: Booked column. Google Sheet: Booked. No more calls or texts.",
     ],
   },
   {
-    title: "2. Leads that did not book carry on",
-    steps: ["Leave the other 3 leads alone."],
-    expect: ["They stay in their normal calls/texts; status unchanged."],
+    id: "C1–C2",
+    title: "Confirmed or moved visit",
+    steps: ["Set a booked visit to Confirmed, or Move it to another future day/time. Send."],
+    expect: ["The lead stays Booked. Our server: 1 change, no issues."],
   },
   {
-    title: "3. A walk-in who is not one of our leads",
-    steps: ["Patients → add a new patient with a made-up name, book a Follow-up."],
-    expect: ["“Our server” shows the files loaded.", "No lead changes anywhere."],
-  },
-  {
-    title: "4. A booked lead cancels",
-    steps: ["Open a booked lead’s patient page, set the visit to Cancel, Save."],
-    expect: [
-      "After the next file: the lead shows “needs attention” with “Stride appointment cancelled”.",
-      "Calls/texts do NOT restart (0 planned).",
-    ],
-  },
-  {
-    title: "5. A visit is deleted instead of cancelled",
-    steps: ["Book another lead, wait for “booked”, then Delete the visit."],
-    expect: [
-      "Same as test 4. (Stride sends deletes without the appointment id; our server finds it by date and time.)",
-    ],
-  },
-  {
-    title: "6. A visit is moved",
-    steps: ["Move a booked lead’s visit to another day/time."],
-    expect: ["The lead stays booked.", "Our server shows an Appointments file with 1 change."],
-  },
-  {
-    title: "7. A patient is checked in",
-    steps: ["Set a visit to Checked In."],
-    expect: ["File loaded with 1 change; the lead stays booked (used later for Keap’s Completed tag)."],
-  },
-  {
-    title: "8. A visit in the past does not count",
-    steps: ["Copy a new lead into Stride and book a visit for yesterday."],
-    expect: ["The lead is matched but NOT marked booked; calls/texts continue."],
-  },
-  {
-    title: "9. Patient details change",
-    steps: ["Change a patient’s mobile number, Save."],
-    expect: ["A Patients file with 1 change is loaded; nothing else happens to the lead."],
-  },
-  {
-    title: "10. Manual send and re-send",
+    id: "C3–C8",
+    title: "Cancel, Late Cancel, No Show, Delete",
     steps: [
-      "Overview → Pause the 5-minute sending, make a change, press “Send changes now”.",
-      "Then press “Send everything again”.",
+      "On a booked lead’s visit choose Cancel, Late Cancel or No Show (Save), or press Delete. Send.",
+      "Wait 6 more minutes and check again.",
     ],
     expect: [
-      "The manual send arrives within a minute.",
-      "The full re-send is loaded with 0 changes (our server ignores what it already has).",
-      "Resume the 5-minute sending afterwards.",
+      "Needs attention with the matching reason: “Cancelled in Stride”, “Late cancel in Stride”, “No show in Stride” or “Appointment removed in Stride”.",
+      "Sheet: Outcome Status “Needs review: …” and the Action cell emptied. Calls/texts do NOT restart.",
+      "Six minutes later nothing has flipped back to Booked.",
+    ],
+  },
+  {
+    id: "C5",
+    title: "Patient rebooks",
+    steps: ["After a cancel / no-show / delete, book a new future visit for the same patient. Send."],
+    expect: ["The lead is Booked again; the Needs attention note disappears."],
+  },
+  {
+    id: "C9",
+    title: "Patient came (Checked In)",
+    steps: ["Book a new future visit and set it to Checked In. Send."],
+    expect: ["The lead stays (or becomes) Booked. Later used for Keap’s Completed tag."],
+  },
+  {
+    id: "C10–C11",
+    title: "Staff re-book from the Sheet after a cancel",
+    steps: [
+      "After a cancel: in the Sheet set Action = Booked and clear the Outcome Status cell.",
+      "Later, book and cancel another visit here.",
+    ],
+    expect: ["The lead is Booked and stays Booked. A newer cancel is still flagged."],
+  },
+  {
+    id: "Rule",
+    title: "Two visits at the same time are refused",
+    steps: ["Book (or Move) a visit into a date and time the same patient already has."],
+    expect: ["A red message: “Stride does not allow this … Pick another time.” Nothing is saved (real Stride refuses it too)."],
+  },
+  {
+    id: "A7",
+    title: "The same booked person added to the Sheet again",
+    steps: ["Add a new Sheet row with the same name, phone and birthday as a Booked lead."],
+    expect: ["Sheet: “Already booked”, no Lead ID, no call. (A different birthday counts as a new referral.)"],
+  },
+  {
+    id: "D",
+    title: "Matching edge cases",
+    steps: [
+      "One-word Sheet name; a visit booked for yesterday; a walk-in added under Patients; two Sheet leads with the same name and birthday but different phones; a patient with the same name but another birthday; a patient added here without a birthday but with the lead’s phone.",
+    ],
+    expect: [
+      "Booked / not booked (past visit) / unmatched / ambiguous (nobody booked) / unmatched / booked by name + phone.",
+    ],
+  },
+  {
+    id: "E",
+    title: "Files",
+    steps: [
+      "Make a change and do not press Send: wait up to 7 minutes.",
+      "Overview → “Send everything again”.",
+    ],
+    expect: [
+      "Files sent shows a “5-minute timer” row and the change arrives.",
+      "The full re-send loads with 0 changes and no lead changes status.",
     ],
   },
 ];
@@ -82,13 +99,17 @@ export default function Tests() {
       <div>
         <h1>Test cases</h1>
         <p className="muted">
-          For the test session. Times: files go out every 5 minutes (or press “Send changes now”); our server reads them 1–2 minutes
-          later. Write down what you see next to each case.
+          Short version of the full Stride Sync Test Plan (same case ids; ask Rudraksh for the link). Files go out every 5 minutes
+          or with “Send changes now”; our server reads them 1–2 minutes later. Check results in “Our server” here, in the staff
+          dashboard and in the Google Sheet.
         </p>
       </div>
       {CASES.map((c) => (
         <section className="card" key={c.title}>
-          <h2>{c.title}</h2>
+          <h2>
+            <span className="muted">{c.id} · </span>
+            {c.title}
+          </h2>
           <div className="grid">
             <div>
               <strong>Do</strong>
