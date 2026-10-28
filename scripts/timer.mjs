@@ -1,5 +1,6 @@
 // Local stand-in for the 5-minute timer: calls the export endpoint like the server cron does.
 //   MOCK_STRIDE_URL=http://localhost:3100 CRON_SECRET=... npm run timer
+// Include the base path when there is one, e.g. MOCK_STRIDE_URL=https://demo.aibolt.ai/mock-stride
 const base = (process.env.MOCK_STRIDE_URL || "http://localhost:3100").replace(/\/$/, "");
 const secret = process.env.CRON_SECRET;
 const everyMs = Number(process.env.EVERY_SECONDS || 300) * 1000;

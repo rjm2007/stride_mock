@@ -109,7 +109,13 @@ alter table mock_stride.cases enable row level security;
 alter table mock_stride.appointments enable row level security;
 alter table mock_stride.exports enable row level security;
 alter table mock_stride.state enable row level security;
-revoke all on schema mock_stride from anon, authenticated;
+-- Supabase's API roles; plain Postgres (the demo server's own db) has neither.
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon')
+     and exists (select 1 from pg_roles where rolname = 'authenticated') then
+    revoke all on schema mock_stride from anon, authenticated;
+  end if;
+end $$;
 
 -- Same clinic setup as the backend's booking tables (demo ids).
 insert into mock_stride.locations(id,name,city,state) values

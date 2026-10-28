@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createPatient } from "../actions";
 import { sql } from "@/lib/db";
 import { phone, when } from "@/lib/format";
@@ -102,7 +103,7 @@ export default async function Patients() {
                   <td className="num">{p.appts}</td>
                   <td>{when(p.modified_at)}</td>
                   <td>
-                    <a href={`/patients/${p.id}`}>Open</a>
+                    <Link href={`/patients/${p.id}`}>Open</Link>
                   </td>
                 </tr>
               ))}

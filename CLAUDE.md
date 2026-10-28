@@ -36,7 +36,9 @@ MOCK_STRIDE_URL=http://localhost:3100 CRON_SECRET=... npm run timer
 ## Deploy
 
 Moving (branch `feature/own-postgres`, see `../DB-Move-Runbook.md`): `Dockerfile` here, built by the backend's
-`docker-compose.prod.yml` as service `mock-stride` at `https://mock.demo.aibolt.ai`, env in `mock-stride.env` on
+`docker-compose.prod.yml` as service `mock-stride` at `https://demo.aibolt.ai/mock-stride` (Next `basePath` from
+`BASE_PATH`, a build arg; use `next/link` for internal links, a plain `<a href="/...">` misses the prefix; the timer
+then calls `https://demo.aibolt.ai/mock-stride/api/cron/export`), env in `mock-stride.env` on
 the server, database = the server's own `db` container (`DATABASE_SSL=disable`; default stays `require`, and
 `DATABASE_PREPARE` stays off for Supabase's pooler).
 

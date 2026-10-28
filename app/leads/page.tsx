@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createPatientFromLead } from "../actions";
 import { sql } from "@/lib/db";
 import { phone, when } from "@/lib/format";
@@ -49,7 +50,7 @@ export default async function Leads() {
                   <td>{when(l.created_at)}</td>
                   <td>
                     {l.mock_patient_id ? (
-                      <a href={`/patients/${l.mock_patient_id}`}>Patient {l.mock_patient_id}</a>
+                      <Link href={`/patients/${l.mock_patient_id}`}>Patient {l.mock_patient_id}</Link>
                     ) : (
                       <form action={createPatientFromLead} className="inline">
                         <input type="hidden" name="lead_id" value={l.id} />

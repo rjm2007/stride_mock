@@ -21,4 +21,6 @@ export function middleware(request: NextRequest) {
   });
 }
 
-export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };
+// "/" on its own: under a basePath (/mock-stride on the demo server) the pattern below does not
+// match the bare base path, which left the Overview page without the password.
+export const config = { matcher: ["/", "/((?!_next/static|_next/image|favicon.ico).*)"] };

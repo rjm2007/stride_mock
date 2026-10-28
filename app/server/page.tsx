@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { sql } from "@/lib/db";
 import { ago, when } from "@/lib/format";
 
@@ -68,7 +69,7 @@ export default async function ServerView() {
                 <tr key={l.mock_patient_id}>
                   <td>{l.full_name}</td>
                   <td className="num">
-                    <a href={`/patients/${l.mock_patient_id}`}>{l.mock_patient_id}</a>
+                    <Link href={`/patients/${l.mock_patient_id}`}>{l.mock_patient_id}</Link>
                   </td>
                   <td>
                     {l.lead_match_status ? (

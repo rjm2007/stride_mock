@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { sendFull, sendNow, toggleAutoSend } from "./actions";
 import { sql } from "@/lib/db";
 import { ago, when } from "@/lib/format";
@@ -105,7 +106,7 @@ export default async function Overview() {
             </tbody>
           </table>
         </div>
-        <a href="/exports">All exports →</a>
+        <Link href="/exports">All exports →</Link>
       </section>
     </>
   );

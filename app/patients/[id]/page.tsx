@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   bookAppointment,
@@ -39,7 +40,7 @@ export default async function PatientPage({
   return (
     <>
       <div>
-        <a href="/patients">← Patients</a>
+        <Link href="/patients">← Patients</Link>
         {error ? (
           <p className="pill bad" role="alert" style={{ display: "block", whiteSpace: "normal", borderRadius: 8, padding: "10px 12px", margin: "10px 0" }}>
             {error}
