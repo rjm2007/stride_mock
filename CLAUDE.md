@@ -35,6 +35,11 @@ MOCK_STRIDE_URL=http://localhost:3100 CRON_SECRET=... npm run timer
 
 ## Deploy
 
+Moving (branch `feature/own-postgres`, see `../DB-Move-Runbook.md`): `Dockerfile` here, built by the backend's
+`docker-compose.prod.yml` as service `mock-stride` at `https://mock.demo.aibolt.ai`, env in `mock-stride.env` on
+the server, database = the server's own `db` container (`DATABASE_SSL=disable`; default stays `require`, and
+`DATABASE_PREPARE` stays off for Supabase's pooler).
+
 Code lives in GitHub `rjm2007/stride_mock` (branch `main`); Vercel project `mock-stride` builds from it.
 Env vars live only in the Vercel project settings (values for the team are in `.secrets/`, never committed).
 After changing env vars, redeploy.

@@ -1,0 +1,12 @@
+# Secrets and local state never go into the image.
+.env
+.env.*
+.secrets
+*.pem
+*.key
+.git
+.next
+.vercel
+node_modules
+.playwright-mcp
+*.md

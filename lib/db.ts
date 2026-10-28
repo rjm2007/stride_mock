@@ -8,8 +8,15 @@ declare global {
 function connect() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
-  // Supabase's pooler runs in transaction mode: prepared statements must be off.
-  return postgres(url, { prepare: false, max: 3, idle_timeout: 20, ssl: "require" });
+  // Supabase's pooler runs in transaction mode: prepared statements must be off (the default).
+  // On the demo server the database is the `db` container next to this app (no public port,
+  // no TLS): there DATABASE_SSL=disable.
+  return postgres(url, {
+    prepare: process.env.DATABASE_PREPARE === "true",
+    max: 3,
+    idle_timeout: 20,
+    ssl: process.env.DATABASE_SSL === "disable" ? false : "require",
+  });
 }
 
 type Sql = ReturnType<typeof postgres>;
